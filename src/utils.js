@@ -176,46 +176,86 @@ export const getTrayectorias = (zones) => {
     if (first) {
       if (direction === 'left') {
         // seccion de abajo - Hacia abajo
-        data.push(
-          {
-            fn: String(Number(valueTo)-0.5).concat('-exp(x)'),
-            graphType: 'polyline',
-            color: '#1890ff',
-            range: [-4,4]
-          }
-        )
+        data.push({
+          fn: String(Number(valueTo)-0.5).concat('-exp(x)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-4,4]
+        });
+        data.push({
+          fn: String(Number(valueTo)-0.5).concat('-exp(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        });
+        data.push({
+          fn: String(Number(valueTo)-0.5).concat('-exp(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
+        });
       } else {
         // seccion de abajo - Hacia arriba
-        data.push(
-          {
-            fn: String(Number(valueTo)-3).concat('+sqrt(x)'),
-            graphType: 'polyline',
-            color: '#1890ff',
-            range: [-4,4]
-          }
-        )
+        data.push({
+          fn: String(Number(valueTo)-3).concat('+sqrt(x)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-4,4]
+        });
+        data.push({
+          fn: String(Number(valueTo)-3).concat('+sqrt(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        });
+        data.push({
+          fn: String(Number(valueTo)-3).concat('+sqrt(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
+        });
       }
     } else if (last) {
       if (direction === 'left') {
         // seccion de arriba - Hacia abajo
-        data.push(
-          {
-            fn: String(Number(valueFrom)+3).concat('-sqrt(x)'),
-            graphType: 'polyline',
-            color: '#1890ff',
-            range: [-4,4]
-          }
-        )
+        data.push({
+          fn: String(Number(valueFrom)+3).concat('-sqrt(x)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-4,4]
+        });
+        data.push({
+          fn: String(Number(valueFrom)+3).concat('-sqrt(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        });
+        data.push({
+          fn: String(Number(valueFrom)+3).concat('-sqrt(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
+        });
       } else {
-        data.push(
-          // seccion de arriba - Hacia arriba
-          {
+        // seccion de arriba - Hacia arriba
+        data.push({
             fn: String(Number(valueFrom)+0.5).concat('+exp(x)'),
             graphType: 'polyline',
             color: '#1890ff',
             range: [-4,4]
-          }
-        )
+          });
+        data.push({
+          fn: String(Number(valueFrom)+0.5).concat('+exp(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        });
+        data.push({
+          fn: String(Number(valueFrom)+0.5).concat('+exp(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
+        });
       }
     } else {
       var between = Math.abs((Number(valueFrom)-Number(valueTo)));
@@ -228,6 +268,18 @@ export const getTrayectorias = (zones) => {
           color: '#1890ff',
           range: [-4,4]
         })
+        data.push({
+          fn: String(middlePont).concat('-').concat('1/'+(between<=1?5:(between<=1.5?3:(between<=2.5?2.5:(between<=3?2:1))))).concat('cbrt(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        })
+        data.push({
+          fn: String(middlePont).concat('-').concat('1/'+(between<=1?5:(between<=1.5?3:(between<=2.5?2.5:(between<=3?2:1))))).concat('cbrt(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
+        })
       } else {
         // intermedia - Hacia abajo
         data.push({
@@ -235,6 +287,18 @@ export const getTrayectorias = (zones) => {
           graphType: 'polyline',
           color: '#1890ff',
           range: [-4,4]
+        });
+        data.push({
+          fn: String(middlePont).concat('+').concat('1/'+(between<=1?5:(between<=1.5?3:(between<=2.5?2.5:(between<=3?2:1))))).concat('cbrt(x-4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [0,8]
+        });
+        data.push({
+          fn: String(middlePont).concat('+').concat('1/'+(between<=1?5:(between<=1.5?3:(between<=2.5?2.5:(between<=3?2:1))))).concat('cbrt(x+4)'),
+          graphType: 'polyline',
+          color: '#1890ff',
+          range: [-8,0]
         });
       }
     }
