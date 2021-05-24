@@ -1,0 +1,110 @@
+.fases {
+  path.line {
+    stroke-width: 4;
+    stroke: transparent;
+  }
+  .y.axis {
+    visibility: hidden;
+  }
+}
+
+.xvst {
+  path.line {
+    stroke-width: 2;
+  }
+}
+
+.ant-input-wrapper.ant-input-group {
+  
+  > span, .ant-input, .ant-input-prefix {
+    background-color: #666666;
+    color: white;
+  }
+}
+
+.ant-divider-inner-text, .ant-card-head-title {
+  color: #ededed;
+}
+
+.function-plot {
+  color: #ededed;
+}
+
+line {
+  stroke: white;
+}
+path.origin {
+  stroke: white;
+}
+text.axis-label {
+  color: #ededed;
+}
+
+ul.data-zones {
+  padding-left: 0;
+
+  & > li {
+    list-style-type: none;
+  }
+}
+
+.function-plot {
+  .x.axis {
+    .tick {
+      line {
+        // grid's vertical lines
+      }
+      text {
+        color:white;
+      }
+    }
+  }
+
+  .y.axis {
+    .tick {
+      line {
+        // grid's horizontal lines
+      }
+      text {
+        color:white;
+      }
+    }
+  }
+  .annotations {
+    text {
+      color: yellow;
+    }
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: .2rem .5rem;
+  border-radius: 20px;
+  font-weight: bold;
+  border: 1px solid;
+  margin-left: 5px;
+  
+  &.badge-repulsor {
+    border-color: #f5222d;
+    color: #f5222d;
+  }
+  &.badge-atractor {
+    border-color: #52c41a;
+    color: #52c41a;
+  }
+  &.badge-inestable {
+    border-color: orange;
+    color: orange;
+  }
+}
+
+.ant-btn-primary {
+  background: #222222;
+  border-color: #111111;
+
+  &:active, &:hover {
+    background: #323232;
+    border-color: #999999;
+  }
+}
