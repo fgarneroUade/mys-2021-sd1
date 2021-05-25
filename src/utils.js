@@ -154,7 +154,7 @@ export const dotTypes = (roots, zones) => {
             value: zones[index].valueTo,
             type: 'Inestable',
             icon: left === 'left' ? <DoubleLeftOutlined /> : <DoubleRightOutlined />,
-            color: 'warning',
+            color: '#FFA500',
             name: `X${index+1}*`,
             styles: 'badge badge-inestable',
             i: index
