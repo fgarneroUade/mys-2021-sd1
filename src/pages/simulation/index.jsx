@@ -2,7 +2,7 @@ import { CaretLeftOutlined, CaretRightOutlined } from '@ant-design/icons';
 import { Card, Col, Input, Row } from 'antd';
 import { Fragment, useState } from 'react';
 import { addStyles } from "react-mathquill";
-import { dotTypes, getRoot, getZones } from '../../utils';
+import { dotTypes, getCleanDots, getRoot, getZones, getCleanZones } from '../../utils';
 import { FunctionPlot } from "../simulation/function-graph";
 import MathJax from 'react-mathjax';
 
@@ -16,8 +16,8 @@ export const SimulationPage = () => {
   // const derivative = derive(input);
   const zones = getZones(input);
   const dots = dotTypes(roots, zones);
-
-  const inlineFormula = `k_{1}* = n^2 + k_n^2 - k_{n-1}`;
+  const cleanDots = getCleanDots(dots);
+  const cleanZones = getCleanZones(zones);
 
   return (
     <div>
@@ -47,20 +47,23 @@ export const SimulationPage = () => {
             
             <Col span={6}>
               <Card title="Puntos de equilibrio" bordered={true} style={{ marginTop: 20 }}>
-                {dots.map(({ value, type, styles, icon, i }) => (
+                {console.log('cleanDots')}
+                {console.log(cleanDots)}
+                {cleanDots.length > 0 && cleanDots.map(({ value, type, styles, icon, i }) => (
                   <MathJax.Provider>
                     <p>
                       <MathJax.Node inline formula={String('x_{').concat(i+1).concat('} : ').concat(parseFloat(value).toFixed(2))} /> <div className={styles}>{icon} {type}</div>
                     </p>
                   </MathJax.Provider>
                 ))}
+                {cleanDots.length == 0 && <p><i>Sin puntos de equilibrio</i></p>}
               </Card>
             </Col>
             <Col span={6}>
               <Card title="Zonas" bordered={true} style={{ marginTop: 20 }}>
                 <MathJax.Provider>
                   <ul className="data-zones">
-                    {zones.map(function(item) {
+                    {cleanZones.map(function(item) {
                       return <li>{item.direction === 'left' ? <CaretLeftOutlined style={{ color: '#f5222d'}} /> : <CaretRightOutlined style={{ color: '#52c41a'}} />} 
                               {<MathJax.Node inline formula={'('+item.valueFrom+' ; '+item.valueTo+')'} />}
                             </li>;
@@ -74,7 +77,7 @@ export const SimulationPage = () => {
 
           <Row gutter={16}>
             <Col span={24}>
-              <FunctionPlot input={input} zones={zones} dots={dots} />  
+              <FunctionPlot input={input} zones={cleanZones} dots={cleanDots} />  
             </Col>
           </Row>
         </Fragment>

@@ -37,11 +37,11 @@ export const FunctionPlot = ({ input, zones, dots }) => {
   };
   // Array.prototype.push.apply(options.data, points);
 
-  const arrows = zones.map(({ result, direction }) => {
+  const arrows = zones.map(({ result, direction, realFromImaginaryResult }) => {
     const vector = direction === 'left' ? -0.3 : 0.3;
     return {
       vector: [vector, 0],
-      offset: [result, 0],
+      offset: [(result.type === 'Complex' ? realFromImaginaryResult : result), 0],
       graphType: 'polyline',
       fnType: 'vector'
     }
@@ -91,6 +91,11 @@ export const FunctionPlot = ({ input, zones, dots }) => {
 
   useEffect(() => {
     try {
+      console.log('Obtejos para gráficos:');
+      console.log(points);
+      console.log(options);
+      console.log(fases);
+      console.log(xvst);
       const a = functionPlot(Object.assign({}, options, { target: rootEl.current }));
       const b = functionPlot(Object.assign({}, fases, { target: fasesEl.current }));
       const c = functionPlot(Object.assign({}, xvst, { target: xvstEl.current }));

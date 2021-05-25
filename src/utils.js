@@ -42,13 +42,16 @@ const buildZone = (func, input, left, right) => {
   return {
     from: left == null ? '-∞' : left.text(),
     to: right == null ? '+∞' : right.text(),
-    direction: value >= 0 ? 'right' : 'left',
+    direction: (result.type === 'Complex' && result.re >= 0 || value >= 0) ? 'right' : 'left',
     value,
     result,
     first: left == null,
     last: right == null,
     valueFrom: left == null ? '-∞' : parseFloat(evaluate(left.text())).toFixed(2),
     valueTo: right == null ? '+∞' : parseFloat(evaluate(right.text())).toFixed(2),
+    imaginaryFrom: left != null && String(left.text()).includes('i'),
+    imaginaryTo: right != null && String(right.text()).includes('i'),
+    realFromImaginaryResult: result.type === 'Complex' ? result.re : undefined
   };
 }
 
@@ -66,23 +69,7 @@ const sortSolutions = (a, b) => {
 export const getZones = (input) => {
   try {
     const solutions = nerdamer.solveEquations(input, 'x').reverse();
-    
-    console.log('Soluciones');
-    if (solutions != null) {
-        solutions.forEach(s => {
-          console.log(s.text());
-      });
-    }
-
     solutions.sort(sortSolutions);
-
-    console.log('Soluciones ordenadas');
-    if (solutions != null) {
-        solutions.forEach(s => {
-          console.log(s.text());
-      });
-    }
-
     const func = compile(input);
     const zones = [];
     if (solutions.length > 0) {
@@ -111,6 +98,47 @@ export const getZones = (input) => {
   }
 }
 
+export const getCleanZones = (zones) => {
+  var cleaned = [];
+  var up;
+  var data;
+  var next = false;
+
+  zones.forEach(zone => {
+    if (next) {
+      if (!zone.imaginaryTo) {
+        // vengo de un nodo abierto y mi sig no es imaginario
+        data.direction = zone.direction;
+        data.valueTo = zone.valueTo;
+        data.to = zone.to;
+        cleaned.push(data);
+        data = undefined;
+        next = false;
+      }
+    } else {
+      data = zone;
+      if (zone.imaginaryTo) {
+        next = true;
+      } else {
+        cleaned.push(data);
+        data = undefined;
+      }
+    }
+    
+    // datos del final
+    if (data != undefined && zone.valueTo === '+∞') {
+      if (next) {
+        data.valueTo = '+∞';
+        next = false;
+        cleaned.push(data);
+      }
+    }
+  });
+  console.log('Clean Zones');
+  console.log(cleaned);
+  return cleaned;
+}
+
 // Puntos de equilibrio
 export const dotTypes = (roots, zones) => {
   try {
@@ -119,46 +147,40 @@ export const dotTypes = (roots, zones) => {
       const left = zones[index].direction;
       const right = zones[index+1].direction;
       
-      /*
-      console.log('left - right');
-      console.log('left: ('+zones[index].from+';'+zones[index].to+')');
-      console.log(zones[index]);
-      console.log('right: ('+zones[index+1].from+';'+zones[index+1].to+')');
-      console.log(zones[index+1]);
-      */
-
-      if (left === right) {
-        console.log('Generar Inestable---------------');
-        return {
-          value: zones[index].valueTo,
-          type: 'Inestable',
-          icon: left === 'left' ? <DoubleLeftOutlined /> : <DoubleRightOutlined />,
-          color: 'warning',
-          name: `X${index+1}*`,
-          styles: 'badge badge-inestable',
-          i: index
-        }
-      } else if (left === 'left') {
-        console.log('Generar Repulsor---------------');
-        return {
-          value: zones[index].valueTo,
-          type: 'Repulsor',
-          icon: <ArrowsAltOutlined />,
-          color: '#f5222d',
-          name: `X${index+1}*`,
-          styles: 'badge badge-repulsor',
-          i: index
-        }
-      } else {
-        console.log('Generar Atractor---------------');
-        return {
-          value: zones[index].valueTo,
-          type: 'Atractor',
-          icon: <ShrinkOutlined />,
-          color: '#52c41a',
-          name: `X${index+1}*`,
-          styles: 'badge badge-atractor',
-          i: index
+      if (!zones[index].imaginaryTo) {
+        if (left === right) {
+          console.log('Generar Inestable---------------');
+          return {
+            value: zones[index].valueTo,
+            type: 'Inestable',
+            icon: left === 'left' ? <DoubleLeftOutlined /> : <DoubleRightOutlined />,
+            color: 'warning',
+            name: `X${index+1}*`,
+            styles: 'badge badge-inestable',
+            i: index
+          }
+        } else if (left === 'left') {
+          console.log('Generar Repulsor---------------');
+          return {
+            value: zones[index].valueTo,
+            type: 'Repulsor',
+            icon: <ArrowsAltOutlined />,
+            color: '#f5222d',
+            name: `X${index+1}*`,
+            styles: 'badge badge-repulsor',
+            i: index
+          }
+        } else {
+          console.log('Generar Atractor---------------');
+          return {
+            value: zones[index].valueTo,
+            type: 'Atractor',
+            icon: <ShrinkOutlined />,
+            color: '#52c41a',
+            name: `X${index+1}*`,
+            styles: 'badge badge-atractor',
+            i: index
+          }
         }
       }
     })
@@ -167,29 +189,38 @@ export const dotTypes = (roots, zones) => {
   }
 }
 
+export const getCleanDots = (dots) => {
+  var cleanDots = [];
+  dots.forEach(dot => {
+    if (dot !== undefined) {
+      cleanDots.push(dot);
+    }
+  });
+  return cleanDots;
+}
+
 // Diagrama X vs T
 export const getTrayectorias = (zones) => {
   const data = [];
 
-  zones.forEach(({ first, last, direction, valueFrom, valueTo }) => {
-    
+  zones.forEach(({ first, last, direction, valueFrom, valueTo, realFromImaginaryResult }) => {
     if (first) {
       if (direction === 'left') {
         // seccion de abajo - Hacia abajo
         data.push({
-          fn: String(Number(valueTo)-0.5).concat('-exp(x)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-0.5).concat('-exp(x)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-4,4]
         });
         data.push({
-          fn: String(Number(valueTo)-0.5).concat('-exp(x-4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-0.5).concat('-exp(x-4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [0,8]
         });
         data.push({
-          fn: String(Number(valueTo)-0.5).concat('-exp(x+4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-0.5).concat('-exp(x+4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-8,0]
@@ -197,19 +228,19 @@ export const getTrayectorias = (zones) => {
       } else {
         // seccion de abajo - Hacia arriba
         data.push({
-          fn: String(Number(valueTo)-3).concat('+sqrt(x)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-3).concat('+sqrt(x)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-4,4]
         });
         data.push({
-          fn: String(Number(valueTo)-3).concat('+sqrt(x-4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-3).concat('+sqrt(x-4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [0,8]
         });
         data.push({
-          fn: String(Number(valueTo)-3).concat('+sqrt(x+4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueTo)-3).concat('+sqrt(x+4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-8,0]
@@ -219,19 +250,19 @@ export const getTrayectorias = (zones) => {
       if (direction === 'left') {
         // seccion de arriba - Hacia abajo
         data.push({
-          fn: String(Number(valueFrom)+3).concat('-sqrt(x)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+3).concat('-sqrt(x)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-4,4]
         });
         data.push({
-          fn: String(Number(valueFrom)+3).concat('-sqrt(x-4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+3).concat('-sqrt(x-4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [0,8]
         });
         data.push({
-          fn: String(Number(valueFrom)+3).concat('-sqrt(x+4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+3).concat('-sqrt(x+4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-8,0]
@@ -239,19 +270,19 @@ export const getTrayectorias = (zones) => {
       } else {
         // seccion de arriba - Hacia arriba
         data.push({
-            fn: String(Number(valueFrom)+0.5).concat('+exp(x)'),
+            fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+0.5).concat('+exp(x)'),
             graphType: 'polyline',
             color: '#1890ff',
             range: [-4,4]
           });
         data.push({
-          fn: String(Number(valueFrom)+0.5).concat('+exp(x-4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+0.5).concat('+exp(x-4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [0,8]
         });
         data.push({
-          fn: String(Number(valueFrom)+0.5).concat('+exp(x+4)'),
+          fn: String(Number(realFromImaginaryResult ? realFromImaginaryResult : valueFrom)+0.5).concat('+exp(x+4)'),
           graphType: 'polyline',
           color: '#1890ff',
           range: [-8,0]
